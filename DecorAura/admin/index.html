@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decor Aura - Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="admin-body">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      Decor Aura <span>ADMIN</span>
+    </div>
+    <ul class="sidebar-nav">
+      <li><a href="#" data-target="dashboard" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+      <li><a href="#" data-target="products"><i class="fa-solid fa-couch"></i> Products</a></li>
+      <li><a href="#" data-target="blogs"><i class="fa-solid fa-newspaper"></i> Blog CMS</a></li>
+      <li><a href="#" data-target="orders"><i class="fa-solid fa-receipt"></i> Orders</a></li>
+      <li><a href="/index.html"><i class="fa-solid fa-arrow-left"></i> View Live Site</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="admin-main">
+    <!-- Header -->
+    <div class="admin-header">
+      <h1 class="heading-md">Admin Dashboard</h1>
+      <div>Logged in as <strong>Curator</strong></div>
+    </div>
+
+    <!-- Section 1: Dashboard Stats -->
+    <div id="section-dashboard" class="admin-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div style="color: var(--text-muted); font-size: 0.85rem;">Total Revenue</div>
+          <div class="val" id="stat-revenue">$0.00</div>
+        </div>
+
+        <div class="stat-card">
+          <div style="color: var(--text-muted); font-size: 0.85rem;">Active Products</div>
+          <div class="val" id="stat-prods">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div style="color: var(--text-muted); font-size: 0.85rem;">Published Articles</div>
+          <div class="val" id="stat-blogs">0</div>
+        </div>
+
+        <div class="stat-card">
+          <div style="color: var(--text-muted); font-size: 0.85rem;">Customer Orders</div>
+          <div class="val" id="stat-orders">0</div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Welcome to Decor Aura Admin Studio</h3>
+        <p style="color: var(--text-secondary); margin-top: 0.5rem;">
+          From this panel, you can manage products, upload 3D models, edit blog articles, and process customer orders without modifying source code.
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 2: Products -->
+    <div id="section-products" class="admin-section" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>Products Catalogue</h2>
+        <button class="btn btn-gold" onclick="document.getElementById('product-modal').classList.add('active')">
+          <i class="fa-solid fa-plus"></i> Add New Product
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>3D Enabled</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Blog CMS -->
+    <div id="section-blogs" class="admin-section" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2>Blog CMS Articles</h2>
+        <button class="btn btn-gold" onclick="document.getElementById('blog-modal').classList.add('active')">
+          <i class="fa-solid fa-plus"></i> Create Article
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="blogs-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Orders -->
+    <div id="section-orders" class="admin-section" style="display: none;">
+      <h2>Customer Orders</h2>
+
+      <div class="admin-card" style="margin-top: 1.5rem;">
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order #</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Update Status</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Product Modal -->
+  <div class="modal-backdrop" id="product-modal">
+    <div class="modal-content">
+      <h3>Add New Product</h3>
+      <form id="product-form" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label>Product Name</label>
+          <input type="text" id="p-name" class="form-control" placeholder="e.g. Solstice Pendant Light" required>
+        </div>
+
+        <div class="form-group">
+          <label>Slug (URL Identifier)</label>
+          <input type="text" id="p-slug" class="form-control" placeholder="solstice-pendant-light">
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label>Price ($)</label>
+            <input type="number" step="0.01" id="p-price" class="form-control" placeholder="290.00" required>
+          </div>
+          <div>
+            <label>Category</label>
+            <select id="p-category" class="form-control">
+              <option value="1">Lighting</option>
+              <option value="2">Furniture</option>
+              <option value="3">Wall Decor</option>
+              <option value="4">Plants & Planters</option>
+              <option value="5">Accessories</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="p-desc" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label>Dimensions</label>
+            <input type="text" id="p-dims" class="form-control" placeholder="W 30cm x H 45cm">
+          </div>
+          <div>
+            <label>Material</label>
+            <input type="text" id="p-mat" class="form-control" placeholder="Brushed Brass, Glass">
+          </div>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label>Stock Quantity</label>
+            <input type="number" id="p-stock" class="form-control" value="20" required>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1.5rem;">
+            <input type="checkbox" id="p-3d">
+            <label for="p-3d">Enable 3D Viewer</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Primary Image URL</label>
+          <input type="url" id="p-image" class="form-control" value="https://images.unsplash.com/photo-1507473885765-e6ed057f782c?q=80&w=800" required>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('product-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-gold">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Blog Modal -->
+  <div class="modal-backdrop" id="blog-modal">
+    <div class="modal-content">
+      <h3>Create Blog Article</h3>
+      <form id="blog-form" style="margin-top: 1rem;">
+        <div class="form-group">
+          <label>Article Title</label>
+          <input type="text" id="b-title" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+          <label>URL Slug</label>
+          <input type="text" id="b-slug" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label>Excerpt</label>
+          <textarea id="b-excerpt" class="form-control" rows="2" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Article Content (Markdown / HTML)</label>
+          <textarea id="b-content" class="form-control" rows="6" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Tags (Comma separated)</label>
+          <input type="text" id="b-tags" class="form-control" placeholder="Lighting, Design, Guides">
+        </div>
+
+        <div class="form-group">
+          <label>Featured Image URL</label>
+          <input type="url" id="b-image" class="form-control" value="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1200" required>
+        </div>
+
+        <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label>SEO Title</label>
+            <input type="text" id="b-seotitle" class="form-control">
+          </div>
+          <div>
+            <label>Meta Description</label>
+            <input type="text" id="b-seodesc" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" id="b-publish" checked>
+          <label for="b-publish">Publish Immediately</label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('blog-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="btn btn-gold">Publish Article</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/js/admin.js"></script>
+</body>
+</html>

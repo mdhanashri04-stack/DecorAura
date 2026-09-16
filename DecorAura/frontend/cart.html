@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopping Cart - Decor Aura</title>
+  <meta name="description" content="View items in your Decor Aura shopping bag and complete mock checkout.">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/shop.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header scrolled">
+    <div class="container header-container">
+      <a href="/index.html" class="brand-logo">
+        DecorAura
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/shop.html" class="nav-link">Shop</a></li>
+          <li><a href="/index.html#collections" class="nav-link">Collections</a></li>
+          <li><a href="/index.html#inspiration" class="nav-link">Inspiration</a></li>
+          <li><a href="/blog.html" class="nav-link">Journal</a></li>
+          <li><a href="/about.html" class="nav-link">About</a></li>
+          <li><a href="/contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/cart.html" class="icon-btn active" aria-label="Shopping Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner -->
+  <div style="background-color: var(--bg-secondary); padding: 7rem 0 3rem 0; text-align: center; border-bottom: 1px solid var(--border-subtle);">
+    <div class="container">
+      <span class="subheading">Your Selection</span>
+      <h1 class="heading-lg">Shopping Cart</h1>
+    </div>
+  </div>
+
+  <main class="container">
+    <div class="cart-layout" id="cart-content-area">
+      <!-- Cart Table (Left) -->
+      <div>
+        <table class="cart-table" id="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th>Quantity</th>
+              <th>Subtotal</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cart-items-body">
+            <!-- Dynamically loaded -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Checkout Summary (Right) -->
+      <div class="cart-summary-box">
+        <h3 class="heading-sm" style="margin-bottom: 1.5rem;">Order Summary</h3>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="summary-subtotal">$0.00</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Insured Shipping</span>
+          <span style="color: #2E7D32;">Complimentary</span>
+        </div>
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="summary-total">$0.00</span>
+        </div>
+
+        <form id="checkout-form" style="margin-top: 2rem;">
+          <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">Customer & Delivery Info</h4>
+
+          <div class="form-group">
+            <input type="text" id="cust-name" class="form-control" placeholder="Full Name" required>
+          </div>
+
+          <div class="form-group">
+            <input type="email" id="cust-email" class="form-control" placeholder="Email Address" required>
+          </div>
+
+          <div class="form-group">
+            <textarea id="cust-address" class="form-control" rows="3" placeholder="Full Shipping Address" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="width: 100%; margin-top: 1rem;">
+            Place Order (Mock Checkout)
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order Confirmation Screen -->
+    <div id="order-confirmation" style="display: none; text-align: center; padding: 5rem 0;">
+      <i class="fa-solid fa-circle-check" style="font-size: 4rem; color: var(--accent-gold); margin-bottom: 1.5rem;"></i>
+      <span class="subheading">Order Confirmed</span>
+      <h2 class="heading-lg" style="margin-bottom: 0.8rem;">Thank You For Your Order!</h2>
+      <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem auto;">
+        Your order reference <strong id="order-number-display" style="color: var(--text-primary);">DA-892147</strong> has been received and processed into our backend system.
+      </p>
+      <a href="/shop.html" class="btn btn-primary">Continue Shopping</a>
+    </div>
+  </main>
+
+  <footer class="footer" style="margin-top: 5rem;">
+    <div class="container footer-bottom" style="border-top: none; padding-top: 0;">
+      <p>&copy; 2026 Decor Aura. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { Cart } from '/js/cart.js';
+    import { API } from '/js/api.js';
+    import '/js/main.js';
+
+    function renderCartTable() {
+      const items = Cart.getItems();
+      const tbody = document.getElementById('cart-items-body');
+      const subtotalEl = document.getElementById('summary-subtotal');
+      const totalEl = document.getElementById('summary-total');
+
+      if (items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 3rem; color: var(--text-muted);">Your shopping bag is currently empty. <a href="/shop.html" style="color: var(--accent-gold); text-decoration: underline;">Explore catalogue</a></td></tr>';
+        subtotalEl.textContent = '$0.00';
+        totalEl.textContent = '$0.00';
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td class="cart-product-cell">
+            <img src="${item.primary_image}" alt="${item.name}" class="cart-product-img">
+            <div>
+              <strong>${item.name}</strong>
+            </div>
+          </td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button class="qty-btn" onclick="window.updateQty(${item.id}, ${item.quantity - 1})" style="width: 28px; height: 28px; font-size: 0.9rem;">-</button>
+              <span>${item.quantity}</span>
+              <button class="qty-btn" onclick="window.updateQty(${item.id}, ${item.quantity + 1})" style="width: 28px; height: 28px; font-size: 0.9rem;">+</button>
+            </div>
+          </td>
+          <td><strong>$${(item.price * item.quantity).toFixed(2)}</strong></td>
+          <td>
+            <button onclick="window.removeItem(${item.id})" style="color: var(--text-muted); cursor: pointer;" aria-label="Remove item">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      const subtotal = Cart.getSubtotal();
+      subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+      totalEl.textContent = `$${subtotal.toFixed(2)}`;
+    }
+
+    window.updateQty = function(id, newQty) {
+      Cart.updateQuantity(id, newQty);
+      renderCartTable();
+    };
+
+    window.removeItem = function(id) {
+      Cart.removeItem(id);
+      renderCartTable();
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCartTable();
+
+      const checkoutForm = document.getElementById('checkout-form');
+      checkoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const items = Cart.getItems();
+        if (items.length === 0) {
+          alert('Your cart is empty!');
+          return;
+        }
+
+        const name = document.getElementById('cust-name').value;
+        const email = document.getElementById('cust-email').value;
+        const address = document.getElementById('cust-address').value;
+
+        const orderData = {
+          customer_name: name,
+          customer_email: email,
+          shipping_address: address,
+          payment_method: "Mock Checkout",
+          items: items.map(i => ({ product_id: i.id, quantity: i.quantity }))
+        };
+
+        try {
+          const res = await API.createOrder(orderData);
+          Cart.clearCart();
+          document.getElementById('cart-content-area').style.display = 'none';
+          document.getElementById('order-confirmation').style.display = 'block';
+          document.getElementById('order-number-display').textContent = res.order_number || 'DA-998231';
+        } catch (err) {
+          alert('Failed to place order.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

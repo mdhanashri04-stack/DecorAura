@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Decor Aura Product Details</title>
+  <meta name="description" id="page-description" content="View product specifications, interactive 3D model, and customer reviews at Decor Aura.">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/shop.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header scrolled">
+    <div class="container header-container">
+      <a href="/index.html" class="brand-logo">
+        DecorAura
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/shop.html" class="nav-link">Shop</a></li>
+          <li><a href="/index.html#collections" class="nav-link">Collections</a></li>
+          <li><a href="/index.html#inspiration" class="nav-link">Inspiration</a></li>
+          <li><a href="/blog.html" class="nav-link">Journal</a></li>
+          <li><a href="/about.html" class="nav-link">About</a></li>
+          <li><a href="/contact.html" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/cart.html" class="icon-btn" aria-label="Shopping Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge" style="display: none;">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Product Detail Content -->
+  <main class="container" style="padding-top: calc(var(--header-height) + 2rem);">
+    <div class="product-detail-grid" id="product-detail-main">
+      <!-- Media Viewer (Left) -->
+      <div>
+        <div class="product-viewer-container">
+          <canvas id="product-3d-canvas"></canvas>
+          <img id="fallback-2d-img" src="" alt="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <p style="font-size: 0.78rem; text-align: center; color: var(--text-muted); margin-top: 0.6rem;" id="viewer-prompt">
+          <i class="fa-solid fa-arrows-rotate"></i> Click & drag mouse to orbit 3D object in 360°
+        </p>
+
+        <div class="product-gallery-thumbs" id="gallery-thumbs">
+          <!-- Gallery thumbs rendered here -->
+        </div>
+      </div>
+
+      <!-- Info Details (Right) -->
+      <div class="product-info-details">
+        <span class="category" id="prod-cat">Lighting</span>
+        <h1 id="prod-name">Aurelia Lamp</h1>
+
+        <div class="product-rating" style="margin-bottom: 0.8rem;">
+          <i class="fa-solid fa-star"></i>
+          <span id="prod-rating">5.0 (28 reviews)</span>
+        </div>
+
+        <div class="price" id="prod-price">$340.00</div>
+
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;" id="prod-desc">
+          Sculpted from brushed champagne bronze and frosted opalescent glass, its floating components create an enchanting interplay between shadow and warm radiant illumination.
+        </p>
+
+        <div class="product-meta-specs">
+          <div class="spec-item">
+            <label>Dimensions</label>
+            <span id="prod-dims">Base 22cm Dia x Height 54cm</span>
+          </div>
+          <div class="spec-item">
+            <label>Material</label>
+            <span id="prod-mat">Brushed Bronze, Opal Glass</span>
+          </div>
+          <div class="spec-item">
+            <label>Availability</label>
+            <span id="prod-stock" style="color: #2E7D32;">In Stock (15 available)</span>
+          </div>
+          <div class="spec-item">
+            <label>Shipping</label>
+            <span>Complimentary Insured Delivery</span>
+          </div>
+        </div>
+
+        <div class="quantity-control">
+          <button class="qty-btn" id="qty-minus">-</button>
+          <span class="qty-val" id="qty-val">1</span>
+          <button class="qty-btn" id="qty-plus">+</button>
+
+          <button class="btn btn-primary" id="add-to-cart-main-btn" style="flex-grow: 1; padding: 0.9rem;">
+            <i class="fa-solid fa-bag-shopping"></i> Add To Cart
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-container">
+      <h2 class="heading-md">Customer Reviews</h2>
+
+      <div class="reviews-grid">
+        <!-- Review List -->
+        <div id="reviews-list">
+          <!-- Dynamically loaded -->
+        </div>
+
+        <!-- Add Review Form -->
+        <form class="review-form" id="review-form">
+          <h3 style="font-size: 1.3rem; margin-bottom: 1rem;">Write a Review</h3>
+
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="rev-author" class="form-control" placeholder="e.g. Sarah Jenkins" required>
+          </div>
+
+          <div class="form-group">
+            <label>Rating</label>
+            <select id="rev-rating" class="form-control">
+              <option value="5">5 Stars - Exceptional</option>
+              <option value="4">4 Stars - Very Good</option>
+              <option value="3">3 Stars - Average</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Your Review</label>
+            <textarea id="rev-comment" class="form-control" rows="4" placeholder="Describe your experience with this piece..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-gold" style="width: 100%;">Submit Review</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer" style="margin-top: 5rem;">
+    <div class="container footer-bottom" style="border-top: none; padding-top: 0;">
+      <p>&copy; 2026 Decor Aura. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { API } from '/js/api.js';
+    import { Cart } from '/js/cart.js';
+    import { initProductViewer } from '/js/product-3d.js';
+    import '/js/main.js';
+
+    let currentProduct = null;
+    let selectedQuantity = 1;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const idOrSlug = urlParams.get('id') || urlParams.get('slug') || 'aurelia-lamp';
+
+      currentProduct = await API.getProduct(idOrSlug);
+      if (!currentProduct) return;
+
+      // Render SEO
+      document.title = `${currentProduct.name} - Decor Aura`;
+      document.getElementById('page-description').content = currentProduct.description;
+
+      // Populate DOM
+      document.getElementById('prod-cat').textContent = currentProduct.category ? currentProduct.category.name : 'Decor';
+      document.getElementById('prod-name').textContent = currentProduct.name;
+      document.getElementById('prod-rating').textContent = `${currentProduct.rating.toFixed(1)} (${currentProduct.reviews_count} reviews)`;
+      document.getElementById('prod-price').textContent = `$${currentProduct.price.toFixed(2)}`;
+      document.getElementById('prod-desc').textContent = currentProduct.description;
+      document.getElementById('prod-dims').textContent = currentProduct.dimensions || 'N/A';
+      document.getElementById('prod-mat').textContent = currentProduct.material || 'Premium Finish';
+      document.getElementById('prod-stock').textContent = `${currentProduct.availability} (${currentProduct.stock} available)`;
+
+      // 3D Viewer or 2D image initialization
+      if (currentProduct.is_3d_enabled) {
+        initProductViewer('product-3d-canvas');
+      } else {
+        document.getElementById('product-3d-canvas').style.display = 'none';
+        document.getElementById('viewer-prompt').style.display = 'none';
+        const img = document.getElementById('fallback-2d-img');
+        img.style.display = 'block';
+        img.src = currentProduct.primary_image;
+      }
+
+      // Quantity controls
+      const qtyVal = document.getElementById('qty-val');
+      document.getElementById('qty-minus').addEventListener('click', () => {
+        if (selectedQuantity > 1) {
+          selectedQuantity--;
+          qtyVal.textContent = selectedQuantity;
+        }
+      });
+
+      document.getElementById('qty-plus').addEventListener('click', () => {
+        selectedQuantity++;
+        qtyVal.textContent = selectedQuantity;
+      });
+
+      document.getElementById('add-to-cart-main-btn').addEventListener('click', () => {
+        Cart.addItem(currentProduct, selectedQuantity);
+      });
+
+      // Render reviews
+      renderReviews(currentProduct.reviews || []);
+
+      // Handle Review Form Submission
+      const form = document.getElementById('review-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const author = document.getElementById('rev-author').value;
+        const rating = parseInt(document.getElementById('rev-rating').value);
+        const comment = document.getElementById('rev-comment').value;
+
+        try {
+          const newReview = await API.addReview(currentProduct.id, {
+            product_id: currentProduct.id,
+            author_name: author,
+            rating: rating,
+            comment: comment
+          });
+          currentProduct.reviews.unshift(newReview);
+          renderReviews(currentProduct.reviews);
+          form.reset();
+          Cart.showToast('Thank you! Your review has been submitted.');
+        } catch (err) {
+          // Local fallback
+          currentProduct.reviews.unshift({ author_name: author, rating: rating, comment: comment });
+          renderReviews(currentProduct.reviews);
+          form.reset();
+          Cart.showToast('Review recorded locally.');
+        }
+      });
+    });
+
+    function renderReviews(reviews) {
+      const list = document.getElementById('reviews-list');
+      if (reviews.length === 0) {
+        list.innerHTML = '<p style="color: var(--text-muted);">No reviews submitted yet for this product. Be the first to share your thoughts!</p>';
+        return;
+      }
+
+      list.innerHTML = reviews.map(r => `
+        <div class="review-card" style="margin-bottom: 1.5rem;">
+          <div class="review-header">
+            <span class="review-author">${r.author_name}</span>
+            <div class="review-stars">
+              ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}
+            </div>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.92rem;">${r.comment}</p>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
