@@ -55,6 +55,8 @@ export default function ProductImage({
           ref={imgRef}
           src={primaryUrl}
           alt={alt || 'DecorAura Product'}
+          loading="lazy"
+          decoding="async"
           className={`${className} transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           onLoad={handleLoad}
           onError={handleError}
@@ -66,6 +68,8 @@ export default function ProductImage({
           ref={imgRef}
           src={secondaryUrl}
           alt={alt || 'DecorAura Product'}
+          loading="lazy"
+          decoding="async"
           className={`${className} transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
           onLoad={handleLoad}
           onError={handleError}

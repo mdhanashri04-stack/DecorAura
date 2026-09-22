@@ -4,6 +4,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Sparkles, ArrowRight, ChevronDown, Info } from 'lucide-react';
+import { track3DHeroEvent } from '../utils/analytics';
+import { getWebGLConfig, setupVisibilityObserver } from '../utils/mobilePerf';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,6 +26,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
   const canvasRef = useRef(null);
   const progressTextRef = useRef(null);
   const assemblyCompleteLogged = useRef(false);
+  const isComponentVisible = useRef(true);
 
   // States: 'loading' | 'glb' | 'procedural' | 'static' | 'neutral'
   const [heroState, setHeroState] = useState('loading');
@@ -36,6 +39,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
     let pointLight;
     let ctx;
     let isLoaded = false;
+    const webglConfig = getWebGLConfig();
 
     // WebGL availability check
     if (!isWebGLAvailable()) {
@@ -133,7 +137,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
           end: '+=200%',
           pin: true,
           refreshPriority: 10,
-          scrub: true,
+          scrub: webglConfig.scrubConfig,
           onUpdate: (self) => {
             const p = Math.max(0, Math.min(1, self.progress));
             scrollProgressObj.value = p;
@@ -143,6 +147,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
             if (p >= 0.99 && !assemblyCompleteLogged.current) {
               console.log('[DecorAura] Assembly complete');
               assemblyCompleteLogged.current = true;
+              track3DHeroEvent('hero_3d_completed');
             } else if (p < 0.95) {
               assemblyCompleteLogged.current = false;
             }
@@ -206,10 +211,10 @@ export default function Hero3D({ onExploreProduct, onReady }) {
 
       // 1. Base
       const baseGroup = new THREE.Group();
-      const bMain = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.25, 0.32, 64), ceramicIvoryMat);
-      bMain.castShadow = true;
+      const bMain = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.25, 0.32, webglConfig.cylinderSegments), ceramicIvoryMat);
+      bMain.castShadow = webglConfig.enableShadows;
       baseGroup.add(bMain);
-      const bCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.08, 64), champagneBrassMat);
+      const bCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 1.05, 0.08, webglConfig.cylinderSegments), champagneBrassMat);
       bCollar.position.y = 0.18;
       baseGroup.add(bCollar);
       baseMesh = baseGroup;
@@ -217,37 +222,38 @@ export default function Hero3D({ onExploreProduct, onReady }) {
 
       // 2. Stem
       const stemGroup = new THREE.Group();
-      const sMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 2.2, 32), champagneBrassMat);
+      const sMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 2.2, webglConfig.cylinderSegments / 2), champagneBrassMat);
       sMesh.position.y = 0.1;
-      sMesh.castShadow = true;
+      sMesh.castShadow = webglConfig.enableShadows;
       stemGroup.add(sMesh);
-      const cMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 32), champagneBrassMat);
+      const cMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, webglConfig.cylinderSegments / 2), champagneBrassMat);
       cMesh.position.y = -0.55;
       stemGroup.add(cMesh);
       stemMesh = stemGroup;
       lampGroup.add(stemMesh);
 
       // 3. Ring
-      ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.045, 32, 64), champagneBrassMat);
+      ringMesh = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.045, webglConfig.torusRadialSegments, webglConfig.torusTubularSegments), champagneBrassMat);
       lampGroup.add(ringMesh);
 
       // 4. Shade
-      shadeMesh = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.15, 32, 100), haloOpalescentMat);
-      shadeMesh.castShadow = true;
+      shadeMesh = new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.15, webglConfig.torusRadialSegments, webglConfig.torusTubularSegments), haloOpalescentMat);
+      shadeMesh.castShadow = webglConfig.enableShadows;
       lampGroup.add(shadeMesh);
 
       // 5. Bulb
-      bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(0.38, 64, 64), lightCoreMat);
+      bulbMesh = new THREE.Mesh(new THREE.SphereGeometry(0.38, webglConfig.sphereSegments, webglConfig.sphereSegments), lightCoreMat);
       lampGroup.add(bulbMesh);
 
       // 6. Orbs
-      orbMesh1 = new THREE.Mesh(new THREE.SphereGeometry(0.14, 32, 32), champagneBrassMat);
-      orbMesh2 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 32, 32), charcoalSlateMat);
+      orbMesh1 = new THREE.Mesh(new THREE.SphereGeometry(0.14, webglConfig.sphereSegments / 2, webglConfig.sphereSegments / 2), champagneBrassMat);
+      orbMesh2 = new THREE.Mesh(new THREE.SphereGeometry(0.12, webglConfig.sphereSegments / 2, webglConfig.sphereSegments / 2), charcoalSlateMat);
       lampGroup.add(orbMesh1);
       lampGroup.add(orbMesh2);
 
       setupScrollAnimation();
       setHeroState('procedural');
+      track3DHeroEvent('hero_3d_loaded', { mode: 'procedural' });
     };
 
     const handleContextLost = (e) => {
@@ -269,12 +275,12 @@ export default function Hero3D({ onExploreProduct, onReady }) {
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
         camera.position.set(0, 1.5, 7.8);
 
-        renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true, alpha: true });
+        renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: !webglConfig.isMobile, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setPixelRatio(webglConfig.pixelRatio);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.15;
-        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.enabled = webglConfig.enableShadows;
 
         // Lights
         const ambLight = new THREE.AmbientLight(0xFFF8EE, 1.3);
@@ -282,7 +288,8 @@ export default function Hero3D({ onExploreProduct, onReady }) {
 
         const dirLight = new THREE.DirectionalLight(0xFFF5E6, 2.6);
         dirLight.position.set(6, 9, 6);
-        dirLight.castShadow = true;
+        dirLight.castShadow = webglConfig.enableShadows;
+        scene.add(dirLight);
         scene.add(dirLight);
 
         const rimLight = new THREE.DirectionalLight(0xC5A059, 1.8);
@@ -334,6 +341,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
 
             setupScrollAnimation();
             setHeroState('glb');
+            track3DHeroEvent('hero_3d_loaded', { mode: 'glb' });
             console.log('[DecorAura] Hero 3D ready (GLB)');
           },
           undefined,
@@ -363,21 +371,27 @@ export default function Hero3D({ onExploreProduct, onReady }) {
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
-      mouse.x += (mouse.targetX - mouse.x) * 0.05;
-      mouse.y += (mouse.targetY - mouse.y) * 0.05;
+      if (isComponentVisible.current) {
+        mouse.x += (mouse.targetX - mouse.x) * 0.05;
+        mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-      if (lampGroup) {
-        lampGroup.rotation.y = mouse.x * 0.15 + (scrollProgressObj.value * Math.PI * 0.4);
-        lampGroup.rotation.x = mouse.y * 0.08;
-      }
+        if (lampGroup) {
+          lampGroup.rotation.y = mouse.x * 0.15 + (scrollProgressObj.value * Math.PI * 0.4);
+          lampGroup.rotation.x = mouse.y * 0.08;
+        }
 
-      if (renderer && scene && camera) {
-        renderer.render(scene, camera);
+        if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+        }
       }
     };
 
     init();
     animate();
+
+    const cleanupObserver = setupVisibilityObserver(containerRef.current, (visible) => {
+      isComponentVisible.current = visible;
+    });
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('resize', handleResize);
@@ -385,6 +399,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
     return () => {
       clearTimeout(loadTimeout);
       cancelAnimationFrame(animationFrameId);
+      cleanupObserver();
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       if (canvasRef.current) {
@@ -406,7 +421,7 @@ export default function Hero3D({ onExploreProduct, onReady }) {
   ];
 
   return (
-    <div ref={containerRef} className="relative w-full h-screen bg-ivory-50 overflow-hidden">
+    <div ref={containerRef} style={{ touchAction: 'pan-y' }} className="relative w-full h-screen bg-ivory-50 overflow-hidden">
       {/* Loading Overlay */}
       {heroState === 'loading' && (
         <div className="absolute inset-0 bg-ivory-50 z-50 flex flex-col items-center justify-center">
@@ -475,7 +490,13 @@ export default function Hero3D({ onExploreProduct, onReady }) {
             className="absolute pointer-events-auto z-30 transform -translate-x-1/2 -translate-y-1/2"
           >
             <button
-              onClick={() => setActiveHotspot(activeHotspot === spot.id ? null : spot.id)}
+              onClick={() => {
+                const nextState = activeHotspot === spot.id ? null : spot.id;
+                setActiveHotspot(nextState);
+                if (nextState) {
+                  track3DHeroEvent('hero_3d_interaction', { hotspot_id: spot.id, hotspot_title: spot.title });
+                }
+              }}
               className="w-8 h-8 rounded-full bg-ivory-50/90 border-2 border-bronze-500 flex items-center justify-center shadow-md hotspot-pulse group transition-transform duration-300 hover:scale-110"
               aria-label={spot.title}
             >

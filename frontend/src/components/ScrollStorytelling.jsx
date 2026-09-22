@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { getWebGLConfig, setupVisibilityObserver } from '../utils/mobilePerf';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,6 +11,7 @@ export default function ScrollStorytelling() {
   const canvasRef = useRef(null);
   const [activeStage, setActiveStage] = useState(0);
   const currentStageRef = useRef(0);
+  const isComponentVisible = useRef(true);
 
   const stages = [
     { num: '01', title: 'MATERIAL', desc: 'Raw minerals, mouth-blown opal glass, and solid champagne brass sourced sustainably.' },
@@ -23,6 +25,7 @@ export default function ScrollStorytelling() {
     let scene, camera, renderer, animId;
     let sphereMesh, torusMesh;
     let ctx;
+    const webglConfig = getWebGLConfig();
 
     const initThree = () => {
       if (!canvasRef.current) return;
@@ -33,9 +36,9 @@ export default function ScrollStorytelling() {
       camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
       camera.position.set(0, 0, 5);
 
-      renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ canvas: canvasRef.current, antialias: !webglConfig.isMobile, alpha: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(webglConfig.pixelRatio);
 
       // Lighting
       const amb = new THREE.AmbientLight(0xFFF8EE, 1.2);
@@ -53,10 +56,11 @@ export default function ScrollStorytelling() {
         wireframe: true
       });
 
-      sphereMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 3), mat);
+      const sphereDetail = webglConfig.isMobile ? 2 : 3;
+      sphereMesh = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, sphereDetail), mat);
       scene.add(sphereMesh);
 
-      torusMesh = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.08, 16, 100), mat);
+      torusMesh = new THREE.Mesh(new THREE.TorusGeometry(1.8, 0.08, webglConfig.torusRadialSegments, webglConfig.torusTubularSegments), mat);
       scene.add(torusMesh);
 
       // GSAP ScrollTrigger
@@ -67,7 +71,7 @@ export default function ScrollStorytelling() {
           end: '+=300%',
           pin: true,
           refreshPriority: 1,
-          scrub: 1.0,
+          scrub: webglConfig.scrubConfig,
           onUpdate: (self) => {
             const index = Math.min(Math.floor(self.progress * stages.length), stages.length - 1);
             if (index !== currentStageRef.current) {
@@ -104,11 +108,17 @@ export default function ScrollStorytelling() {
 
     const animate = () => {
       animId = requestAnimationFrame(animate);
-      if (torusMesh) torusMesh.rotation.z += 0.005;
-      if (renderer && scene && camera) {
-        renderer.render(scene, camera);
+      if (isComponentVisible.current) {
+        if (torusMesh) torusMesh.rotation.z += 0.005;
+        if (renderer && scene && camera) {
+          renderer.render(scene, camera);
+        }
       }
     };
+
+    const cleanupObserver = setupVisibilityObserver(sectionRef.current, (visible) => {
+      isComponentVisible.current = visible;
+    });
 
     animate();
 
@@ -123,6 +133,7 @@ export default function ScrollStorytelling() {
 
     return () => {
       cancelAnimationFrame(animId);
+      cleanupObserver();
       window.removeEventListener('resize', handleResize);
       if (ctx) ctx.revert();
       if (renderer) renderer.dispose();
@@ -130,7 +141,7 @@ export default function ScrollStorytelling() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative w-full h-screen bg-charcoal-900 text-white overflow-hidden">
+    <section ref={sectionRef} style={{ touchAction: 'pan-y' }} className="relative w-full h-screen bg-charcoal-900 text-white overflow-hidden">
       {/* Background 3D Canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-10 opacity-70 outline-none" />
 

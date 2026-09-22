@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductViewer from '../components/ProductViewer';
 import { useCart } from '../context/CartContext';
 import { Star, Truck, ShieldCheck, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { API } from '../services/api';
 import ProductImage from '../components/ProductImage';
+import { trackViewItem } from '../utils/analytics';
 
 export default function Product({ product, onSelectProduct }) {
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState(product?.reviews || []);
   const [reviewForm, setReviewForm] = useState({ author: '', rating: 5, comment: '' });
   const { addToCart, showToast } = useCart();
+
+  useEffect(() => {
+    if (product) {
+      trackViewItem(product);
+    }
+  }, [product]);
 
   if (!product) return <div className="pt-32 text-center">Product loading...</div>;
 

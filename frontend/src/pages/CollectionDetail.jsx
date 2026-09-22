@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Star, Plus, BookOpen, Layers } from 'lucide-reac
 import { API } from '../services/api';
 import ProductImage from '../components/ProductImage';
 import { useCart } from '../context/CartContext';
+import { trackViewCollection } from '../utils/analytics';
 
 export default function CollectionDetail({ slug, onBack, onSelectProduct, onSelectArticle, onSelectCollection }) {
   const [collection, setCollection] = useState(null);
@@ -27,6 +28,7 @@ export default function CollectionDetail({ slug, onBack, onSelectProduct, onSele
         // SEO Title & Meta Description update
         if (coll) {
           document.title = coll.seo_title || `${coll.name} Home Decor Collection | DecorAura`;
+          trackViewCollection(coll);
         }
       } catch (err) {
         console.error('Error fetching collection detail:', err);

@@ -3,6 +3,7 @@ import { ArrowLeft, Clock, Calendar, ShoppingBag, Plus } from 'lucide-react';
 import { API } from '../services/api';
 import { useCart } from '../context/CartContext';
 import ProductImage from '../components/ProductImage';
+import { trackViewArticle } from '../utils/analytics';
 
 export default function Article({ article, onBack, onSelectProduct }) {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -11,6 +12,7 @@ export default function Article({ article, onBack, onSelectProduct }) {
   useEffect(() => {
     async function loadArticleProducts() {
       if (!article) return;
+      trackViewArticle(article);
       const prods = await API.getBlogProducts(article.slug);
       setFeaturedProducts(prods);
     }

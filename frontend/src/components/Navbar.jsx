@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, User, Menu, X, Sliders } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { trackNavigation } from '../utils/analytics';
 
 export default function Navbar({ onNavigate, activeRoute, activeSection }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -18,6 +19,11 @@ export default function Navbar({ onNavigate, activeRoute, activeSection }) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleNavClick = (path) => {
+    trackNavigation(path);
+    onNavigate(path);
+  };
 
   const navLinks = [
     { label: 'Shop', path: 'shop' },
@@ -53,7 +59,7 @@ export default function Navbar({ onNavigate, activeRoute, activeSection }) {
             return (
               <button
                 key={link.path}
-                onClick={() => onNavigate(link.path)}
+                onClick={() => handleNavClick(link.path)}
                 className={`px-4 py-1.5 text-xs font-sans font-medium uppercase tracking-widest rounded-full transition-all duration-300 ${
                   isActive
                     ? 'bg-charcoal-900 text-white shadow-sm'
@@ -115,7 +121,7 @@ export default function Navbar({ onNavigate, activeRoute, activeSection }) {
             <button
               key={link.path}
               onClick={() => {
-                onNavigate(link.path);
+                handleNavClick(link.path);
                 setMobileMenuOpen(false);
               }}
               className="text-left px-4 py-2 text-sm font-sans font-medium uppercase tracking-widest text-charcoal-800 hover:text-bronze-500"

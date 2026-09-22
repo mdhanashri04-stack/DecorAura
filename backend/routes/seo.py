@@ -28,7 +28,7 @@ def get_seo_metadata(page_type: str, target_slug: str, db: Session = Depends(get
                 description=prod.description[:160],
                 keywords=f"{prod.name}, luxury decor, lighting, furniture",
                 og_image=prod.primary_image,
-                canonical_url=f"https://decoraura.com/product/{target_slug}"
+                canonical_url=f"https://decoraura.netlify.app/products/{target_slug}"
             )
     elif page_type == "blog":
         blog = db.query(Blog).filter(Blog.slug == target_slug).first()
@@ -41,7 +41,7 @@ def get_seo_metadata(page_type: str, target_slug: str, db: Session = Depends(get
                 description=blog.meta_description or blog.excerpt[:160],
                 keywords=blog.tags_csv,
                 og_image=blog.featured_image,
-                canonical_url=f"https://decoraura.com/blog/{target_slug}"
+                canonical_url=f"https://decoraura.netlify.app/journal/{target_slug}"
             )
 
     return SEOMetadata(
@@ -52,7 +52,7 @@ def get_seo_metadata(page_type: str, target_slug: str, db: Session = Depends(get
         description="Premium interior design, high-end modern lighting and furniture for contemporary living.",
         keywords="interior design, luxury decor, home lighting, Aurelia Lamp",
         og_image="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=1200",
-        canonical_url="https://decoraura.com/"
+        canonical_url="https://decoraura.netlify.app/"
     )
 
 @router.get("/api/seo/jsonld/{page_type}/{target_slug}")
@@ -69,7 +69,7 @@ def get_json_ld_schema(page_type: str, target_slug: str, db: Session = Depends(g
                 "sku": f"DA-{prod.id}",
                 "offers": {
                     "@type": "Offer",
-                    "url": f"https://decoraura.com/product/{prod.slug}",
+                    "url": f"https://decoraura.netlify.app/products/{prod.slug}",
                     "priceCurrency": "USD",
                     "price": str(prod.price),
                     "availability": "https://schema.org/InStock"
@@ -100,7 +100,7 @@ def get_json_ld_schema(page_type: str, target_slug: str, db: Session = Depends(g
                     "name": "Decor Aura",
                     "logo": {
                         "@type": "ImageObject",
-                        "url": "https://decoraura.com/logo.png"
+                        "url": "https://decoraura.netlify.app/decoraura-logo.png"
                     }
                 },
                 "description": blog.excerpt
@@ -112,8 +112,8 @@ def get_json_ld_schema(page_type: str, target_slug: str, db: Session = Depends(g
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "Decor Aura",
-        "url": "https://decoraura.com",
-        "logo": "https://decoraura.com/logo.png",
+        "url": "https://decoraura.netlify.app",
+        "logo": "https://decoraura.netlify.app/decoraura-logo.png",
         "description": "Luxury home-decor e-commerce and interior inspiration brand."
     }
 
@@ -123,26 +123,26 @@ def get_sitemap(db: Session = Depends(get_db)):
     blogs = db.query(Blog).all()
 
     urls = [
-        "https://decoraura.com/",
-        "https://decoraura.com/shop",
-        "https://decoraura.com/journal",
-        "https://decoraura.com/about"
+        "https://decoraura.netlify.app/",
+        "https://decoraura.netlify.app/shop",
+        "https://decoraura.netlify.app/collections",
+        "https://decoraura.netlify.app/journal"
     ]
 
     for p in products:
-        urls.append(f"https://decoraura.com/product/{p.slug}")
+        urls.append(f"https://decoraura.netlify.app/products/{p.slug}")
     for b in blogs:
-        urls.append(f"https://decoraura.com/blog/{b.slug}")
+        urls.append(f"https://decoraura.netlify.app/journal/{b.slug}")
 
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for url in urls:
-        xml_content += f'  <url><loc>{url}</loc><changefreq>weekly</changefreq></url>\n'
+        xml_content += f'  <url><loc>{url}</loc></url>\n'
     xml_content += '</urlset>'
 
     return Response(content=xml_content, media_type="application/xml")
 
 @router.get("/robots.txt")
 def get_robots():
-    content = "User-agent: *\nAllow: /\nSitemap: https://decoraura.com/sitemap.xml\n"
+    content = "User-agent: *\nAllow: /\n\nSitemap: https://decoraura.netlify.app/sitemap.xml\n"
     return Response(content=content, media_type="text/plain")

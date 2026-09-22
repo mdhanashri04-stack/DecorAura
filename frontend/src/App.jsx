@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
@@ -13,6 +13,7 @@ import Admin from './pages/Admin';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CartProvider, useCart } from './context/CartContext';
 import { API } from './services/api';
+import { trackPageView } from './utils/analytics';
 
 function MainApp() {
   const [currentRoute, setCurrentRoute] = useState('home');
@@ -21,6 +22,14 @@ function MainApp() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [selectedCollectionSlug, setSelectedCollectionSlug] = useState('minimal');
   const { toastMessage } = useCart();
+  const lastTrackedPathRef = useRef('');
+
+  const firePageViewTracking = (path, title) => {
+    if (lastTrackedPathRef.current !== path) {
+      lastTrackedPathRef.current = path;
+      trackPageView(path, title);
+    }
+  };
 
   useEffect(() => {
     if ('scrollRestoration' in window.history) {
@@ -168,6 +177,35 @@ function MainApp() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  useEffect(() => {
+    let path = '/';
+    let title = document.title || 'DecorAura';
+
+    if (currentRoute === 'home') {
+      if (activeSection && activeSection !== 'hero') {
+        path = `/${activeSection}`;
+      } else {
+        path = '/';
+      }
+    } else if (currentRoute === 'shop') {
+      path = '/shop';
+    } else if (currentRoute === 'collections') {
+      path = '/collections';
+    } else if (currentRoute === 'collection-detail') {
+      path = `/collections/${selectedCollectionSlug || 'minimal'}`;
+    } else if (currentRoute === 'product') {
+      path = `/products/${selectedProduct?.slug || selectedProduct?.id || 'product'}`;
+    } else if (currentRoute === 'journal') {
+      path = '/journal';
+    } else if (currentRoute === 'article') {
+      path = `/journal/${selectedArticle?.slug || selectedArticle?.id || 'article'}`;
+    } else if (currentRoute === 'admin') {
+      path = '/admin';
+    }
+
+    firePageViewTracking(path, title);
+  }, [currentRoute, activeSection, selectedCollectionSlug, selectedProduct, selectedArticle]);
 
   const navigateTo = (route, params = {}) => {
     const sectionRoutes = ['shop', 'collections', 'spaces', 'journal'];

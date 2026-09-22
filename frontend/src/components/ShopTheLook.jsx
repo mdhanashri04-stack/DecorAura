@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, ShoppingBag, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { trackShopTheLookHotspot } from '../utils/analytics';
 
 const HOTSPOT_CONFIGS = [
   {
@@ -78,7 +79,10 @@ export default function ShopTheLook({ products = [], onSelectProduct }) {
               style={{ top: spot.top, left: spot.left }}
               className="absolute transform -translate-x-1/2 -translate-y-1/2 group z-30"
             >
-              <div className="w-9 h-9 rounded-full bg-ivory-50/90 border-2 border-bronze-500 flex items-center justify-center cursor-pointer shadow-lg hotspot-pulse transition-transform duration-300 group-hover:scale-110">
+              <div
+                onClick={() => trackShopTheLookHotspot(spot.product)}
+                className="w-9 h-9 rounded-full bg-ivory-50/90 border-2 border-bronze-500 flex items-center justify-center cursor-pointer shadow-lg hotspot-pulse transition-transform duration-300 group-hover:scale-110"
+              >
                 <Plus size={16} className="text-charcoal-900" />
               </div>
 

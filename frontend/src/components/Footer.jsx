@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { X, Calendar, ShieldCheck, RefreshCw, MapPin, CheckCircle, Map } from 'lucide-react';
+import { trackNavigation } from '../utils/analytics';
 
 export default function Footer({ onNavigate }) {
   const [activeModal, setActiveModal] = useState(null); // 'appointments' | 'shipping' | 'returns' | 'sitemap'
   const [appointmentSent, setAppointmentSent] = useState(false);
+
+  const handleNav = (path) => {
+    trackNavigation(path);
+    if (onNavigate) onNavigate(path);
+  };
 
   const handleAppointmentSubmit = (e) => {
     e.preventDefault();
@@ -41,11 +47,11 @@ export default function Footer({ onNavigate }) {
           <div>
             <h4 className="text-xs font-sans font-bold uppercase tracking-widest text-bronze-500 mb-4">Navigation</h4>
             <ul className="space-y-2 text-xs font-sans text-white/70">
-              <li><button onClick={() => onNavigate('shop')} className="hover:text-bronze-500 transition-colors text-left">Shop</button></li>
-              <li><button onClick={() => onNavigate('collections')} className="hover:text-bronze-500 transition-colors text-left">Collections</button></li>
-              <li><button onClick={() => onNavigate('spaces')} className="hover:text-bronze-500 transition-colors text-left">Spaces</button></li>
-              <li><button onClick={() => onNavigate('journal')} className="hover:text-bronze-500 transition-colors text-left">Journal</button></li>
-              <li><button onClick={() => onNavigate('admin')} className="hover:text-bronze-500 transition-colors pt-1 block text-left">Admin Studio</button></li>
+              <li><button onClick={() => handleNav('shop')} className="hover:text-bronze-500 transition-colors text-left">Shop</button></li>
+              <li><button onClick={() => handleNav('collections')} className="hover:text-bronze-500 transition-colors text-left">Collections</button></li>
+              <li><button onClick={() => handleNav('spaces')} className="hover:text-bronze-500 transition-colors text-left">Spaces</button></li>
+              <li><button onClick={() => handleNav('journal')} className="hover:text-bronze-500 transition-colors text-left">Journal</button></li>
+              <li><button onClick={() => handleNav('admin')} className="hover:text-bronze-500 transition-colors pt-1 block text-left">Admin Studio</button></li>
             </ul>
           </div>
 

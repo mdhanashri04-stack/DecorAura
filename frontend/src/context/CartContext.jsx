@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { trackAddToCart } from '../utils/analytics';
 
 const CartContext = createContext();
 
@@ -27,6 +28,7 @@ export function CartProvider({ children }) {
   };
 
   const addToCart = (product, quantity = 1) => {
+    if (!product) return;
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -43,6 +45,7 @@ export function CartProvider({ children }) {
         quantity: quantity
       }];
     });
+    trackAddToCart(product, quantity);
     showToast(`Added "${product.name}" to bag`);
     setIsCartOpen(true);
   };
